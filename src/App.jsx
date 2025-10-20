@@ -165,49 +165,6 @@ function getStatistics(terms) {
   };
 }
 
-// ==================== EXPORTADOR ====================
-function exportToCSV(terms) {
-  const headers = ['label', 'replace_by', 'action', 'justification'];
-  
-  const escapeCSV = (field) => {
-    if (!field) return '';
-    const str = String(field);
-    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-      return `"${str.replace(/"/g, '""')}"`;
-    }
-    return str;
-  };
-  
-  const rows = terms.map(term => {
-    const action = term.finalAction || term.action;
-    const replaceBy = action === 'MERGE' ? term.mergeTarget || '' : '';
-    
-    let justification = `${term.category}`;
-    if (term.validated) justification += ' validated';
-    justification += ` - occurrences: ${term.occurrences}, relevance: ${term.relevance.toFixed(2)}`;
-    
-    if (action === 'MERGE' && term.mergeTarget) {
-      justification = `Merged with ${term.mergeTarget}`;
-    }
-    
-    return `${escapeCSV(term.term)},${escapeCSV(replaceBy)},${escapeCSV(action.toLowerCase())},${escapeCSV(justification)}`;
-  });
-  
-  return [headers.join(','), ...rows].join('\n');
-}
-
-function downloadFile(content, filename) {
-  const blob = new Blob([content], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
-
 // ==================== COMPONENTE PRINCIPAL ====================
 function App() {
   const [terms, setTerms] = useState([]);
@@ -246,30 +203,38 @@ function App() {
     setMergeInputs(prev => ({ ...prev, [termId]: value }));
   };
 
+  // ==================== EXPORTADOR CORREGIDO ====================
   const exportThesaurus = () => {
-  const headers = ['label', 'replace_by'];
-  
-  const rows = terms.map(term => {
-    const action = term.finalAction || term.action;
-    const replaceBy = action === 'MERGE' ? term.mergeTarget || '' : '';
+    const headers = ['label', 'replace by'];
     
-    return [term.term, replaceBy];
-  });
-  
-  const txtContent = [headers, ...rows]
-    .map(row => row.join('\t'))
-    .join('\n');
+    // CRÍTICO: Solo exportar términos ELIMINATE y MERGE, NO los KEEP
+    const rows = terms
+      .filter(term => {
+        const action = term.finalAction || term.action;
+        return action === 'ELIMINATE' || action === 'MERGE';
+      })
+      .map(term => {
+        const action = term.finalAction || term.action;
+        const replaceBy = action === 'MERGE' ? (term.mergeTarget || '') : '';
+        
+        return [term.term, replaceBy];
+      });
+    
+    // Formato TXT con tabulación (tab-delimited) para VOSviewer
+    const txtContent = [headers, ...rows]
+      .map(row => row.join('\t'))
+      .join('\n');
 
-  const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'tesauro_validado.txt';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-};
+    const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'tesauro_validado.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   const getActionColor = (action) => {
     const colors = {
@@ -324,7 +289,7 @@ function App() {
                 <li>Export term frequency and relevance from VOSviewer</li>
                 <li>Upload the file (tab-separated format)</li>
                 <li>Review automatic classifications and make decisions</li>
-                <li>Export validated thesaurus as CSV</li>
+                <li>Export validated thesaurus as TXT (only ELIMINATE and MERGE terms)</li>
                 <li>Import back into VOSviewer</li>
               </ol>
             </div>
@@ -369,7 +334,7 @@ id    term              occurrences    relevance score
                 className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
               >
                 <Download className="w-4 h-4" />
-                Export Thesaurus CSV
+                Export Thesaurus TXT
               </button>
             </div>
             
