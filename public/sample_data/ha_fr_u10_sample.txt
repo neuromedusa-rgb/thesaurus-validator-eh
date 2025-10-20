@@ -1,0 +1,31 @@
+id	term	occurrences	relevance score
+1	anthropocene	94	0.4521
+2	climate change	72	0.3419
+3	sustainability	156	1.2344
+4	analysis	203	0.1234
+5	biodiversity	45	0.8765
+6	ecosystem	67	0.7654
+7	environmental justice	38	1.5432
+8	study	178	0.0987
+9	resilience	52	0.9876
+10	conservation	61	0.8543
+11	extinction	23	1.7654
+12	habitat	48	0.7321
+13	method	145	0.1456
+14	multispecies	15	2.1234
+15	nature	89	0.4567
+16	political ecology	31	1.4321
+17	research	234	0.0876
+18	restoration	28	1.3456
+19	rewilding	12	2.3456
+20	thing	87	0.0654
+21	urban ecology	35	0.9123
+22	wilderness	26	1.1234
+23	climate crisis	19	1.6543
+24	ecocriticism	17	1.8765
+25	environmental humanities	42	1.3214
+26	landscape	76	0.6789
+27	posthuman	14	2.0987
+28	species	54	0.7890
+29	article	167	0.1123
+30	impact	198	0.1345
